@@ -1,1 +1,14 @@
+node_modules
+
+# output
 /target
+/pkg/binaries
+
+# os
+.DS_Store
+Thumbs.db
+
+# env
+.env
+.env.*
+!.env.example

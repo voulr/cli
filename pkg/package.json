@@ -1,0 +1,13 @@
+{
+	"name": "voulr",
+	"version": "TEMPLATE",
+	"description": "",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/voulr/cli.git"
+	},
+	"bin": {
+		"voulr": "run.js"
+	}
+}

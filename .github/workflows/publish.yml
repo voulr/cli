@@ -1,0 +1,83 @@
+name: publish
+on:
+    push:
+        tags:
+            - "v*" # only run on version tags
+
+jobs:
+    build:
+        name: build ${{ matrix.target }}
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                include:
+                    - os: ubuntu-latest
+                      target: x86_64-unknown-linux-gnu
+                    - os: ubuntu-latest
+                      target: aarch64-unknown-linux-gnu
+                    - os: windows-latest
+                      target: x86_64-pc-windows-msvc
+                    - os: macos-latest
+                      target: x86_64-apple-darwin
+                    - os: macos-latest
+                      target: aarch64-apple-darwin
+        steps:
+            - name: checkout
+              uses: actions/checkout@v4
+
+            - name: install rust
+              uses: dtolnay/rust-toolchain@stable
+              with:
+                  targets: ${{ matrix.target }}
+
+            - name: build
+              run: cargo build --release --target ${{ matrix.target }}
+
+            - name: package
+              shell: bash
+              run: |
+                  binary_name="voulr"
+                  # add .exe for windows
+                  if [ "${{ matrix.os }}" = "windows-latest" ]; then
+                    binary_name="$binary_name.exe"
+                  fi
+                  # copy binaries to pkg
+                  mkdir -p pkg/binaries
+                  cp "target/${{ matrix.target }}/release/$binary_name" pkg/binaries/
+
+            - name: upload artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                  name: binaries-${{ matrix.target }}
+                  path: pkg/binaries/*
+
+    publish:
+        name: publish to npm
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout
+              uses: actions/checkout@v4
+
+            - name: download artifacts
+              uses: actions/download-artifact@v3
+              with:
+                  path: pkg/binaries
+
+            - name: install node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+
+            - name: get version from tag
+              id: get_version
+              run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+            - name: publish
+              run: |
+                  cd pkg
+                  cp ../README.md .
+                  jq '.version = "${{ steps.get_version.outputs.version }}"' package.json > tmp && mv tmp package.json
+                  npm publish
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
