@@ -28,19 +28,30 @@ jobs:
                   targets: ${{ matrix.target }}
 
             - name: build
-              run: cargo build --release --target ${{ matrix.target }}
+              run: |
+                  cargo build --release --target ${{ matrix.target }} -v
+                  echo "Build completed, checking target directory:"
+                  ls -la target/${{ matrix.target }}/release/
 
             - name: package
               shell: bash
               run: |
                   binary_name="voulr"
-                  # add .exe for windows
                   if [ "${{ matrix.os }}" = "windows-latest" ]; then
                     binary_name="$binary_name.exe"
                   fi
-                  # copy binaries to pkg
                   mkdir -p pkg/binaries
-                  cp "target/${{ matrix.target }}/release/$binary_name" pkg/binaries/
+
+                  echo "Checking contents of target directory:"
+                  ls -R target/
+
+                  echo "Looking for binary at: target/${{ matrix.target }}/release/$binary_name"
+                  if [ -f "target/${{ matrix.target }}/release/$binary_name" ]; then
+                    cp "target/${{ matrix.target }}/release/$binary_name" pkg/binaries/
+                  else
+                    echo "Binary not found!"
+                    exit 1
+                  fi
 
             - name: upload artifacts
               uses: actions/upload-artifact@v3
