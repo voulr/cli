@@ -59,7 +59,7 @@ jobs:
             - name: download artifacts
               uses: actions/download-artifact@v3
               with:
-                  path: pkg/binaries
+                  path: pkg/binaries/*
 
             - name: install node
               uses: actions/setup-node@v4
