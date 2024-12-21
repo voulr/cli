@@ -1,8 +1,5 @@
 name: publish
-on:
-    push:
-        tags:
-            - "v*" # only run on version tags
+on: [push]
 
 jobs:
     build:
@@ -69,15 +66,7 @@ jobs:
               with:
                   node-version: 20
 
-            - name: get version from tag
-              id: get_version
-              run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-
             - name: publish
-              run: |
-                  cd pkg
-                  cp ../README.md .
-                  jq '.version = "${{ steps.get_version.outputs.version }}"' package.json > tmp && mv tmp package.json
-                  npm publish
+              run: cd pkg && npm publish
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
