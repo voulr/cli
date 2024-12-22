@@ -1,5 +1,4 @@
 name: publish
-
 on:
     push:
         branches:
@@ -29,6 +28,6 @@ jobs:
             - name: publish to npm
               run: |
                   cd pkg
-                  npm publish
+                  npm publish --access public
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
