@@ -5,3 +5,8 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.23", features = ["derive"] }
+
+[profile.release]
+opt-level = 's' # optimize for size
+lto = true
+strip = true
