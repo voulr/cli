@@ -1,0 +1,20 @@
+{
+	"name": "voulr",
+	"version": "0.1.0",
+	"description": "A CLI for creating Voulr projects",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/voulr/cli"
+	},
+	"homepage": "https://voulr.com",
+	"bin": "./run.js",
+	"keywords": [
+		"create",
+		"new",
+		"project",
+		"starter",
+		"voulr",
+		"template"
+	]
+}
