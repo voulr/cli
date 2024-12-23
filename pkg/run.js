@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-const os = require("os")
-const { execFileSync } = require("child_process")
-const path = require("path")
+import os from "os"
+import { execFileSync } from "child_process"
+import path from "path"
 
 const platforms = [
 	{
