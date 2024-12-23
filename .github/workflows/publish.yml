@@ -51,6 +51,14 @@ jobs:
                   sudo apt-get update
                   sudo apt-get install -y gcc-mingw-w64-x86-64 gcc-mingw-w64-i686
 
+            - name: setup cargo config for cross-compilation
+              run: |
+                  mkdir -p .cargo
+                  echo '[target.x86_64-apple-darwin]
+                  linker = "o64-clang"
+                  [target.aarch64-apple-darwin]
+                  linker = "o64-clang"' > .cargo/config.toml
+
             - name: build macos
               run: |
                   export PATH="$(pwd)/osxcross/target/bin:$PATH"
