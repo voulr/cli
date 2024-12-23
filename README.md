@@ -1,3 +1,3 @@
-# cli
+## credits
 
-A CLI for creating Voulr projects
+inspired by: [create-o7-app](https://github.com/ottomated/create-o7-app)

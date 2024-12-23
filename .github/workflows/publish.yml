@@ -22,13 +22,12 @@ jobs:
               with:
                   path: osxcross
                   key: ${{ runner.os }}-osxcross-0.1
-                  restore-keys: |
-                      ${{ runner.os }}-osxcross-
+                  restore-keys: ${{ runner.os }}-osxcross-
 
             - name: install osxcross (macos tools)
               if: steps.cache-osxcross.outputs.cache-hit != 'true'
               run: |
-                  rm -rf osxcross || true 
+                  rm -rf osxcross || true # remove osxcross dir if it already exists 
                   git clone https://github.com/tpoechtrager/osxcross
                   cd osxcross
                   sudo tools/get_dependencies.sh
