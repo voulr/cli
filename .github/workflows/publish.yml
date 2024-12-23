@@ -20,10 +20,10 @@ jobs:
 
             - name: build
               run: |
-                  cross build --release --target x86_64-unknown-linux-musl
-                  cargo build --release --target x86_64-pc-windows-gnu
-                  cross build --release --target i686-pc-windows-gnu
-                  cross build --release --target x86_64-apple-darwin
+                  cross build --release --target x86_64-unknown-linux-musl && cross clean
+                  cross build --release --target x86_64-pc-windows-gnu && cross clean
+                  cross build --release --target i686-pc-windows-gnu && cross clean
+                  cross build --release --target x86_64-apple-darwin && cross clean
                   cross build --release --target aarch64-apple-darwin
 
             - name: copy artifacts
