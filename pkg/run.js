@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import os from "os"
-import { execFileSync } from "child_process"
-import path from "path"
+const os = require("os")
+const { execFileSync } = require("child_process")
+const path = require("path")
 
 const platforms = [
 	{
@@ -31,16 +31,12 @@ const platforms = [
 	},
 ]
 
-async function run() {
-	const type = os.type()
-	const arch = os.arch()
-	const supported = platforms.find((p) => p.type === type && p.arch === arch)
-	if (!supported) {
-		throw new Error(`unsupported platform: ${type} ${arch}`)
-	}
-
-	const binaryPath = path.join(__dirname, `bin/voulr-${supported.file}`)
-	execFileSync(binaryPath, process.argv.slice(2), { stdio: "inherit" })
+const type = os.type()
+const arch = os.arch()
+const supported = platforms.find((p) => p.type === type && p.arch === arch)
+if (!supported) {
+	throw new Error(`unsupported platform: ${type} ${arch}`)
 }
 
-await run()
+const binaryPath = path.join(__dirname, `bin/voulr-${supported.file}`)
+execFileSync(binaryPath, process.argv.slice(2), { stdio: "inherit" })
