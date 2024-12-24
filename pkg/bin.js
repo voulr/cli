@@ -1,30 +1,31 @@
 const os = require("os")
 const platforms = [
 	{
+		platform: "macos-silicon",
 		type: "Darwin",
 		arch: "arm64",
-		file: "macos-silicon",
 	},
 	{
+		platform: "macos-intel",
 		type: "Darwin",
 		arch: "x64",
-		file: "macos-intel",
 	},
 	{
+		platform: "windows",
 		type: "Windows_NT",
 		arch: "x64",
-		file: "windows.exe",
 	},
 	{
+		platform: "linux",
 		type: "Linux",
 		arch: "x64",
-		file: "linux",
 	},
 ]
 
 const type = os.type()
 const arch = os.arch()
 const supported = platforms.find((p) => p.type === type && p.arch === arch)
+
 if (!supported) {
 	throw new Error(`unsupported platform: ${type} ${arch}`)
 }
@@ -36,27 +37,28 @@ const { x: extract } = require("tar")
 const { spawnSync } = require("child_process")
 const { version } = require("./package.json")
 
+// Get platform-specific names
+const isWindows = type === "Windows_NT"
 const dir = join(__dirname, "node_modules", ".bin")
-const bin = join(dir, `voulr-${supported.file}`)
-
+const bin = join(dir, `voulr${isWindows ? ".exe" : ""}`)
 const exists = existsSync(bin)
 
 async function install() {
 	if (exists) return
-
 	if (!existsSync(dir)) {
 		mkdirSync(dir, { recursive: true })
 	}
 
 	const res = await fetch(
-		`https://github.com/voulr/cli/releases/download/${version}/voulr-${supported.file}.tar.gz`,
+		`https://github.com/voulr/cli/releases/download/${version}/voulr-${getPlatformName()}.tar.gz`,
 	)
+
 	if (!res.ok) {
 		console.error(`error fetching release: ${res.statusText}`)
 		process.exit(1)
 	}
-	const sink = Readable.fromWeb(res.body).pipe(extract({ strip: 1, C: dir }))
 
+	const sink = Readable.fromWeb(res.body).pipe(extract({ C: dir }))
 	return new Promise((resolve) => {
 		sink.on("finish", () => resolve())
 		sink.on("error", (err) => {
@@ -75,7 +77,7 @@ async function run() {
 	})
 	if (child.error) {
 		console.error(child.error)
-		child.exit(1)
+		process.exit(1)
 	}
 	process.exit(child.status)
 }

@@ -9,33 +9,21 @@ jobs:
         strategy:
             matrix:
                 include:
-                    - platform: macos (silicon)
+                    - platform: macos-silicon
                       os: macos-latest
                       target: aarch64-apple-darwin
-                      source_file: voulr
-                      dest_file: voulr-macos-silicon
-                      cross: false
 
-                    - platform: macos (intel)
+                    - platform: macos-intel
                       os: macos-latest
                       target: x86_64-apple-darwin
-                      source_file: voulr
-                      dest_file: voulr-macos-intel
-                      cross: false
 
                     - platform: windows
                       os: windows-latest
                       target: x86_64-pc-windows-msvc
-                      source_file: voulr.exe
-                      dest_file: voulr-windows
-                      cross: false
 
                     - platform: linux
                       os: ubuntu-latest
                       target: x86_64-unknown-linux-musl
-                      source_file: voulr
-                      dest_file: voulr-linux
-                      cross: true
 
         runs-on: ${{ matrix.os }}
         steps:
@@ -48,28 +36,21 @@ jobs:
                   targets: ${{ matrix.target }}
 
             - name: install cross
-              if: matrix.cross
+              if: matrix.platform == 'linux'
               run: cargo install cross
 
             - name: build
-              shell: bash
-              run: |
-                  if ${{ matrix.cross }}; then
-                    cross build --release --target ${{ matrix.target }}
-                  else  
-                    cargo build --release --target ${{ matrix.target }}
-                  fi
+              run: ${{ matrix.platform == 'linux' && 'cross' || 'cargo' }} build --release --target ${{ matrix.target }}
 
-            - name: copy artifact
+            - name: prepare artifact
               run: |
                   mkdir -p artifacts
-                  mv target/${{ matrix.target }}/release/${{ matrix.source_file }} artifacts/${{ matrix.dest_file }}
-                  mkdir -p artifacts/compressed
-                  tar -czvf artifacts/compressed/${{ matrix.dest_file }}.tar.gz artifacts/${{ matrix.dest_file }}
+                  tar -czvf artifacts/voulr-${{ matrix.platform }}.tar.gz -C target/${{ matrix.target }}/release ${{ matrix.platform == 'windows' && 'voulr.exe' || 'voulr' }}
 
             - name: upload artifact
               uses: actions/upload-artifact@v4
               with:
+                  name: ${{ matrix.target }}
                   path: artifacts
 
     publish:
@@ -92,7 +73,7 @@ jobs:
               uses: softprops/action-gh-release@v2
               with:
                   tag_name: ${{ steps.get_version.outputs.version }}
-                  files: artifacts/compressed/*
+                  files: compressed/*/*
               env:
                   github_token: ${{ secrets.gh_token }}
 
