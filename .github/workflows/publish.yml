@@ -44,14 +44,14 @@ jobs:
 
             - name: prepare artifact
               run: |
-                  mkdir -p artifacts
-                  tar -czvf artifacts/voulr-${{ matrix.platform }}.tar.gz -C target/${{ matrix.target }}/release ${{ matrix.platform == 'windows' && 'voulr.exe' || 'voulr' }}
+                  mkdir -p artifact
+                  tar -czvf artifact/voulr-${{ matrix.platform }}.tar.gz -C target/${{ matrix.target }}/release ${{ matrix.platform == 'windows' && 'voulr.exe' || 'voulr' }}
 
             - name: upload artifact
               uses: actions/upload-artifact@v4
               with:
                   name: ${{ matrix.target }}
-                  path: artifacts
+                  path: artifact
 
     publish:
         needs: build
@@ -67,15 +67,15 @@ jobs:
 
             - name: get version
               id: get_version
-              run: echo "version=$(grep "version" cargo.toml | head -n1 | cut -d '"' -f2)" >> $github_output
+              run: echo "version=$(grep "version" Cargo.toml | head -n1 | cut -d '"' -f2)" >> $github_output
 
             - name: release
               uses: softprops/action-gh-release@v2
               with:
                   tag_name: ${{ steps.get_version.outputs.version }}
-                  files: compressed/*/*
+                  files: artifacts/*/*
               env:
-                  github_token: ${{ secrets.gh_token }}
+                  github_token: ${{ secrets.GH_TOKEN }}
 
             - name: install node
               uses: actions/setup-node@v4
@@ -90,4 +90,4 @@ jobs:
                   jq '.version = "${{ steps.get_version.outputs.version }}"' package.json > tmp && mv tmp package.json
                   npm publish
               env:
-                  node_auth_token: ${{ secrets.npm_token }}
+                  node_auth_token: ${{ secrets.NPM_TOKEN }}
