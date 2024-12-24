@@ -37,10 +37,8 @@ const { x: extract } = require("tar")
 const { spawnSync } = require("child_process")
 const { version } = require("./package.json")
 
-// Get platform-specific names
-const isWindows = type === "Windows_NT"
 const dir = join(__dirname, "node_modules", ".bin")
-const bin = join(dir, `voulr${isWindows ? ".exe" : ""}`)
+const bin = join(dir, `voulr${type === "Windows_NT" ? ".exe" : ""}`)
 const exists = existsSync(bin)
 
 async function install() {
@@ -50,7 +48,7 @@ async function install() {
 	}
 
 	const res = await fetch(
-		`https://github.com/voulr/cli/releases/download/${version}/voulr-${getPlatformName()}.tar.gz`,
+		`https://github.com/voulr/cli/releases/download/${version}/voulr-${supported.platform}.tar.gz`,
 	)
 
 	if (!res.ok) {
