@@ -25,98 +25,59 @@ const platforms = [
 const type = os.type()
 const arch = os.arch()
 const supported = platforms.find((p) => p.type === type && p.arch === arch)
-
 if (!supported) {
 	throw new Error(`unsupported platform: ${type} ${arch}`)
 }
 
 const { join } = require("path")
-const { existsSync, mkdirSync, chmodSync } = require("fs")
+const { existsSync, mkdirSync } = require("fs")
 const { Readable } = require("stream")
 const { x: extract } = require("tar")
 const { spawnSync } = require("child_process")
 const { version } = require("./package.json")
 
-// Using a more reliable installation directory
-const dir = join(os.homedir(), ".voulr", "bin")
+const dir = join(__dirname, "node_modules", ".bin")
 const bin = join(dir, `voulr-${supported.file}`)
 
-console.log("Installation directory:", dir)
-console.log("Binary path:", bin)
+const exists = existsSync(bin)
 
 async function install() {
-	console.log("Starting installation...")
-	console.log("Platform:", type, arch)
-	console.log("Selected binary:", supported.file)
+	if (exists) return
 
-	try {
-		if (!existsSync(dir)) {
-			console.log("Creating installation directory...")
-			mkdirSync(dir, { recursive: true })
-		}
-
-		const url = `https://github.com/voulr/cli/releases/download/${version}/voulr-${supported.file}.tar.gz`
-		console.log("Downloading from:", url)
-
-		const res = await fetch(url)
-
-		if (!res.ok) {
-			throw new Error(`Failed to download: ${res.status} ${res.statusText}`)
-		}
-
-		console.log("Download successful, extracting...")
-
-		const sink = Readable.fromWeb(res.body).pipe(extract({ strip: 1, C: dir }))
-
-		await new Promise((resolve, reject) => {
-			sink.on("finish", () => {
-				console.log("Extraction complete")
-				resolve()
-			})
-			sink.on("error", (err) => {
-				console.error("Extraction failed:", err)
-				reject(err)
-			})
-		})
-
-		// Make binary executable
-		console.log("Setting executable permissions...")
-		chmodSync(bin, "755")
-
-		// Verify binary exists
-		if (!existsSync(bin)) {
-			throw new Error(`Binary not found at ${bin} after installation`)
-		}
-
-		console.log("Installation complete!")
-	} catch (error) {
-		console.error("Installation failed:", error)
-		throw error
+	if (!existsSync(dir)) {
+		mkdirSync(dir, { recursive: true })
 	}
+
+	const res = await fetch(
+		`https://github.com/voulr/cli/releases/download/${version}/voulr-${supported.file}.tar.gz`,
+	)
+	if (!res.ok) {
+		console.error(`error fetching release: ${res.statusText}`)
+		process.exit(1)
+	}
+	const sink = Readable.fromWeb(res.body).pipe(extract({ strip: 1, C: dir }))
+
+	return new Promise((resolve) => {
+		sink.on("finish", () => resolve())
+		sink.on("error", (err) => {
+			console.error(`error fetching release: ${err.message}`)
+			process.exit(1)
+		})
+	})
 }
 
 async function run() {
-	if (!existsSync(bin)) {
-		console.log("Binary not found, installing...")
-		await install()
-	}
-
-	console.log("Running binary:", bin)
+	if (!exists) await install()
 	const args = process.argv.slice(2)
-	console.log("Arguments:", args)
-
 	const child = spawnSync(bin, args, {
 		cwd: process.cwd(),
 		stdio: "inherit",
-		env: process.env,
 	})
-
 	if (child.error) {
-		console.error("Execution failed:", child.error)
-		process.exit(1)
+		console.error(child.error)
+		child.exit(1)
 	}
-
-	process.exit(child.status ?? 0)
+	process.exit(child.status)
 }
 
 module.exports = { install, run }

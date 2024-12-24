@@ -12,21 +12,29 @@ jobs:
                     - platform: macos (silicon)
                       os: macos-latest
                       target: aarch64-apple-darwin
+                      source_file: voulr
+                      dest_file: voulr-macos-silicon
                       cross: false
 
                     - platform: macos (intel)
                       os: macos-latest
                       target: x86_64-apple-darwin
+                      source_file: voulr
+                      dest_file: voulr-macos-intel
                       cross: false
 
                     - platform: windows
                       os: windows-latest
                       target: x86_64-pc-windows-msvc
+                      source_file: voulr.exe
+                      dest_file: voulr-windows
                       cross: false
 
                     - platform: linux
                       os: ubuntu-latest
                       target: x86_64-unknown-linux-musl
+                      source_file: voulr
+                      dest_file: voulr-linux
                       cross: true
 
         runs-on: ${{ matrix.os }}
@@ -52,11 +60,17 @@ jobs:
                     cargo build --release --target ${{ matrix.target }}
                   fi
 
+            - name: copy artifact
+              run: |
+                  mkdir -p artifacts
+                  mv target/${{ matrix.target }}/release/${{ matrix.source_file }} artifacts/${{ matrix.dest_file }}
+                  mkdir -p artifacts/compressed
+                  tar -czvf artifacts/compressed/${{ matrix.dest_file }}.tar.gz artifacts/${{ matrix.dest_file }}
+
             - name: upload artifact
               uses: actions/upload-artifact@v4
               with:
-                  name: ${{ matrix.target }}
-                  path: target/${{ matrix.target }}/release
+                  path: artifacts
 
     publish:
         needs: build
@@ -70,25 +84,17 @@ jobs:
               with:
                   path: artifacts
 
-            - name: compress
-              run: |
-                  mkdir -p compressed
-                  tar -czvf compressed/voulr-macos-silicon.tar.gz artifacts/aarch64-apple-darwin/voulr
-                  tar -czvf compressed/voulr-macos-intel.tar.gz artifacts/x86_64-apple-darwin/voulr
-                  tar -czvf compressed/voulr-windows.tar.gz artifacts/x86_64-pc-windows-msvc/voulr.exe
-                  tar -czvf compressed/voulr-linux.tar.gz artifacts/x86_64-unknown-linux-musl/voulr
-
             - name: get version
               id: get_version
-              run: echo "version=$(grep "version" Cargo.toml | head -n1 | cut -d '"' -f2)" >> $GITHUB_OUTPUT
+              run: echo "version=$(grep "version" cargo.toml | head -n1 | cut -d '"' -f2)" >> $github_output
 
             - name: release
               uses: softprops/action-gh-release@v2
               with:
                   tag_name: ${{ steps.get_version.outputs.version }}
-                  files: compressed/*
+                  files: artifacts/compressed/*
               env:
-                  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+                  github_token: ${{ secrets.gh_token }}
 
             - name: install node
               uses: actions/setup-node@v4
@@ -99,8 +105,8 @@ jobs:
             - name: publish to npm
               run: |
                   cd pkg
-                  cp ../README.md .
+                  cp ../readme.md .
                   jq '.version = "${{ steps.get_version.outputs.version }}"' package.json > tmp && mv tmp package.json
                   npm publish
               env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  node_auth_token: ${{ secrets.npm_token }}
