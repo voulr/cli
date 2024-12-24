@@ -5,29 +5,24 @@ const path = require("path")
 
 const platforms = [
 	{
-		type: "Windows_NT",
+		type: "Darwin",
 		arch: "x64",
-		file: "win64.exe",
+		file: "macos-silicon",
+	},
+	{
+		type: "Darwin",
+		arch: "arm64",
+		file: "macos-intel",
 	},
 	{
 		type: "Windows_NT",
-		arch: "ia32",
-		file: "win32.exe",
+		arch: "x64",
+		file: "windows.exe",
 	},
 	{
 		type: "Linux",
 		arch: "x64",
 		file: "linux",
-	},
-	{
-		type: "Darwin",
-		arch: "x64",
-		file: "macos",
-	},
-	{
-		type: "Darwin",
-		arch: "arm64",
-		file: "macos-arm64",
 	},
 ]
 

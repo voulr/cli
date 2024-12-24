@@ -9,24 +9,28 @@ jobs:
         strategy:
             matrix:
                 include:
-                    - platform: macos (apple silicon)
+                    - platform: macos (silicon)
                       os: macos-latest
                       target: aarch64-apple-darwin
+                      file: macos-silicon
                       cross: false
 
                     - platform: macos (intel)
                       os: macos-latest
                       target: x86_64-apple-darwin
+                      file: macos-intel
                       cross: false
 
                     - platform: windows
                       os: windows-latest
                       target: x86_64-pc-windows-msvc
+                      file: windows.exe
                       cross: false
 
                     - platform: linux
                       os: ubuntu-latest
                       target: x86_64-unknown-linux-musl
+                      file: linux
                       cross: true
 
         runs-on: ${{ matrix.os }}
@@ -52,11 +56,10 @@ jobs:
                     cargo build --release --target ${{ matrix.target }}
                   fi
 
-            - name: upload artifact
-              uses: actions/upload-artifact@v4
-              with:
-                  name: ${{ matrix.target }}
-                  path: target/${{ matrix.target }}/release/voulr*
+            - name: copy artifact
+              run: |
+                  mkdir -p pkg/bin
+                  mv target/${{ matrix.target }}/release/voulr* pkg/bin/voulr-${{ matrix.file }}
 
     publish:
         needs: build
@@ -64,11 +67,6 @@ jobs:
         steps:
             - name: checkout
               uses: actions/checkout@v4
-
-            - name: download artifact
-              uses: actions/download-artifact@v4
-              with:
-                  path: pkg/bin
 
             - name: install node
               uses: actions/setup-node@v4
