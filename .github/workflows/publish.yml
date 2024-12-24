@@ -60,7 +60,7 @@ jobs:
               shell: bash
               run: |
                   mkdir artifacts
-                  mv target/${{ matrix.target }}/release/voulr* artifacts/voulr-${{ matrix.file }}
+                  cp target/${{ matrix.target }}/release/voulr* artifacts/voulr-${{ matrix.file }}
 
             - name: upload artifact
               uses: actions/upload-artifact@v4
