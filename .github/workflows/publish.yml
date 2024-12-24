@@ -56,10 +56,10 @@ jobs:
                     cargo build --release --target ${{ matrix.target }}
                   fi
 
-            - name: copy artifacts
+            - name: copy artifact
               shell: bash
               run: |
-                  mkdir -p artifacts
+                  mkdir artifacts
                   mv target/${{ matrix.target }}/release/voulr* artifacts/voulr-${{ matrix.file }}
 
             - name: upload artifact
@@ -81,7 +81,7 @@ jobs:
 
             - name: compress
               run: |
-                  mkdir -p compressed
+                  mkdir compressed
                   for file in artifacts/*; do tar -czvf "compressed/$file.tar.gz" "$file"; done
 
             - name: get version
