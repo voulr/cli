@@ -12,25 +12,21 @@ jobs:
                     - platform: macos (silicon)
                       os: macos-latest
                       target: aarch64-apple-darwin
-                      file: macos-silicon
                       cross: false
 
                     - platform: macos (intel)
                       os: macos-latest
                       target: x86_64-apple-darwin
-                      file: macos-intel
                       cross: false
 
                     - platform: windows
                       os: windows-latest
                       target: x86_64-pc-windows-msvc
-                      file: windows.exe
                       cross: false
 
                     - platform: linux
                       os: ubuntu-latest
                       target: x86_64-unknown-linux-musl
-                      file: linux
                       cross: true
 
         runs-on: ${{ matrix.os }}
@@ -56,17 +52,11 @@ jobs:
                     cargo build --release --target ${{ matrix.target }}
                   fi
 
-            - name: copy artifact
-              shell: bash
-              run: |
-                  mkdir artifacts
-                  ls
-                  cp target/${{ matrix.target }}/release/voulr* artifacts/voulr-${{ matrix.file }}
-
             - name: upload artifact
               uses: actions/upload-artifact@v4
               with:
-                  path: artifacts
+                  name: ${{ matrix.target }}
+                  path: target/${{ matrix.target }}/release/${{ matrix.binary }}
 
     publish:
         needs: build
@@ -82,8 +72,11 @@ jobs:
 
             - name: compress
               run: |
-                  mkdir compressed
-                  for file in artifacts/*; do tar -czvf "compressed/$file.tar.gz" "$file"; done
+                  mkdir -p compressed
+                  tar -czvf compressed/voulr-macos-silicon.tar.gz artifacts/aarch64-apple-darwin/voulr
+                  tar -czvf compressed/voulr-macos-intel.tar.gz artifacts/x86_64-apple-darwin/voulr
+                  tar -czvf compressed/voulr-windows.tar.gz artifacts/x86_64-pc-windows-msvc/voulr.exe
+                  tar -czvf compressed/voulr-linux.tar.gz artifacts/x86_64-unknown-linux-musl/voulr
 
             - name: get version
               id: get_version
