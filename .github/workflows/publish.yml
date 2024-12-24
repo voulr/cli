@@ -87,6 +87,8 @@ jobs:
               with:
                   tag_name: ${{ steps.get_version.outputs.version }}
                   files: compressed/*
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: install node
               uses: actions/setup-node@v4
