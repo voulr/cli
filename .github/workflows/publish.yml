@@ -67,7 +67,7 @@ jobs:
 
             - name: get version
               id: get_version
-              run: echo "version=$(grep "version" Cargo.toml | head -n1 | cut -d '"' -f2)" >> $github_output
+              run: echo "version=$(grep "version" Cargo.toml | head -n1 | cut -d '"' -f2)" >> $GITHUB_OUTPUT
 
             - name: release
               uses: softprops/action-gh-release@v2
