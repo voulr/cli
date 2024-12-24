@@ -37,8 +37,7 @@ const { x: extract } = require("tar")
 const { spawnSync } = require("child_process")
 const { version } = require("./package.json")
 
-const dir = join(__dirname, "node_modules", ".bin")
-const bin = join(dir, `voulr-${supported.file}`)
+const bin = join(__dirname, `voulr-${supported.file}`)
 
 const exists = existsSync(bin)
 
