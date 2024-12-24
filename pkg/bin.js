@@ -31,60 +31,88 @@ if (!supported) {
 }
 
 const { join } = require("path")
-const { existsSync, mkdirSync } = require("fs")
+const { existsSync, mkdirSync, chmodSync } = require("fs")
 const { Readable } = require("stream")
 const { x: extract } = require("tar")
 const { spawnSync } = require("child_process")
 const { version } = require("./package.json")
 
-const dir = join(__dirname, "node_modules", ".bin")
+// Using a more reliable installation directory
+const dir = join(os.homedir(), ".voulr", "bin")
 const bin = join(dir, `voulr-${supported.file}`)
 
-async function install() {
-	if (existsSync(bin)) return
+console.log("Installation directory:", dir)
+console.log("Binary path:", bin)
 
-	if (!existsSync(dir)) {
-		mkdirSync(dir, { recursive: true })
-	}
+async function install() {
+	console.log("Starting installation...")
+	console.log("Platform:", type, arch)
+	console.log("Selected binary:", supported.file)
 
 	try {
-		const res = await fetch(
-			`https://github.com/voulr/cli/releases/download/${version}/voulr-${supported.file}.tar.gz`,
-		)
+		if (!existsSync(dir)) {
+			console.log("Creating installation directory...")
+			mkdirSync(dir, { recursive: true })
+		}
+
+		const url = `https://github.com/voulr/cli/releases/download/${version}/voulr-${supported.file}.tar.gz`
+		console.log("Downloading from:", url)
+
+		const res = await fetch(url)
 
 		if (!res.ok) {
-			console.error(`error fetching release: ${res.statusText}`)
-			process.exit(1)
+			throw new Error(`Failed to download: ${res.status} ${res.statusText}`)
 		}
+
+		console.log("Download successful, extracting...")
 
 		const sink = Readable.fromWeb(res.body).pipe(extract({ strip: 1, C: dir }))
 
-		return new Promise((resolve, reject) => {
-			sink.on("finish", resolve)
+		await new Promise((resolve, reject) => {
+			sink.on("finish", () => {
+				console.log("Extraction complete")
+				resolve()
+			})
 			sink.on("error", (err) => {
-				console.error(`error extracting release: ${err.message}`)
+				console.error("Extraction failed:", err)
 				reject(err)
 			})
 		})
+
+		// Make binary executable
+		console.log("Setting executable permissions...")
+		chmodSync(bin, "755")
+
+		// Verify binary exists
+		if (!existsSync(bin)) {
+			throw new Error(`Binary not found at ${bin} after installation`)
+		}
+
+		console.log("Installation complete!")
 	} catch (error) {
-		console.error(`error during installation: ${error.message}`)
-		process.exit(1)
+		console.error("Installation failed:", error)
+		throw error
 	}
 }
 
 async function run() {
 	if (!existsSync(bin)) {
+		console.log("Binary not found, installing...")
 		await install()
 	}
 
+	console.log("Running binary:", bin)
 	const args = process.argv.slice(2)
+	console.log("Arguments:", args)
+
 	const child = spawnSync(bin, args, {
 		cwd: process.cwd(),
 		stdio: "inherit",
+		env: process.env,
 	})
 
 	if (child.error) {
-		console.error(child.error)
+		console.error("Execution failed:", child.error)
 		process.exit(1)
 	}
 
