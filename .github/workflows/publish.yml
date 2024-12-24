@@ -58,7 +58,9 @@ jobs:
 
             - name: copy artifacts
               shell: bash
-              run: mv target/${{ matrix.target }}/release/voulr* artifacts/voulr-${{ matrix.file }}
+              run: |
+                  mkdir -p artifacts
+                  mv target/${{ matrix.target }}/release/voulr* artifacts/voulr-${{ matrix.file }}
 
             - name: upload artifact
               uses: actions/upload-artifact@v4
