@@ -6,12 +6,12 @@ const path = require("path")
 const platforms = [
 	{
 		type: "Darwin",
-		arch: "x64",
+		arch: "arm64",
 		file: "macos-silicon",
 	},
 	{
 		type: "Darwin",
-		arch: "arm64",
+		arch: "x64",
 		file: "macos-intel",
 	},
 	{
