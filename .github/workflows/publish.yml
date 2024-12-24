@@ -12,21 +12,25 @@ jobs:
                     - platform: macos (silicon)
                       os: macos-latest
                       target: aarch64-apple-darwin
+                      file: macos-silicon
                       cross: false
 
                     - platform: macos (intel)
                       os: macos-latest
                       target: x86_64-apple-darwin
+                      file: macos-intel
                       cross: false
 
                     - platform: windows
                       os: windows-latest
                       target: x86_64-pc-windows-msvc
+                      file: windows.exe
                       cross: false
 
                     - platform: linux
                       os: ubuntu-latest
                       target: x86_64-unknown-linux-musl
+                      file: linux
                       cross: true
 
         runs-on: ${{ matrix.os }}
@@ -52,6 +56,15 @@ jobs:
                     cargo build --release --target ${{ matrix.target }}
                   fi
 
+            - name: copy artifacts
+              shell: bash
+              run: mv target/${{ matrix.target }}/release/voulr* artifacts/voulr-${{ matrix.file }}
+
+            - name: upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  path: artifacts
+
     publish:
         needs: build
         runs-on: ubuntu-latest
@@ -59,13 +72,25 @@ jobs:
             - name: checkout
               uses: actions/checkout@v4
 
-            - name: copy artifacts
+            - name: download artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  path: artifacts
+
+            - name: compress
               run: |
-                  mkdir artifacts
-                  mv target/aarch64-apple-darwin/release/voulr pkg/bin/voulr-macos-silicon
-                  mv target/x86_64-apple-darwin/release/voulr pkg/bin/voulr-macos-intel
-                  mv target/x86_64-pc-windows-msvc/release/voulr.exe pkg/bin/voulr-windows.exe
-                  mv target/x86_64-unknown-linux-musl/release/voulr pkg/bin/voulr-linux
+                  mkdir -p compressed
+                  for file in artifacts/*; do tar -czvf "compressed/$file.tar.gz" "$file"; done
+
+            - name: get version
+              id: get_version
+              run: echo "version=$(grep "version" Cargo.toml | head -n1 | cut -d '"' -f2)" >> $GITHUB_OUTPUT
+
+            - name: release
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: ${{ steps.get_version.outputs.version }}
+                  files: compressed/*
 
             - name: install node
               uses: actions/setup-node@v4
@@ -74,6 +99,10 @@ jobs:
                   registry-url: "https://registry.npmjs.org"
 
             - name: publish to npm
-              run: cd pkg && npm publish
+              run: |
+                  cd pkg
+                  cp ../README.md .
+                  jq '.version = "${{ steps.get_version.outputs.version }}"' package.json > tmp && mv tmp package.json
+                  npm publish
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
