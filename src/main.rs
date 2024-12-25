@@ -1,9 +1,11 @@
+use crate::{create::create, init::init, prompt::prompt};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 mod create;
 mod init;
-mod input;
+mod prompt;
+mod utils;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -22,8 +24,8 @@ fn main() -> Result<()> {
     let args = Args::parse();
 
     match args.command {
-        Commands::Create => create::create(input::prompt()?),
-        Commands::Init => init::init(input::prompt()?),
+        Commands::Create => create(prompt()?)?,
+        Commands::Init => init(prompt()?)?,
     };
 
     Ok(())

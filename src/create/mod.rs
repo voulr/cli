@@ -1,7 +1,7 @@
-use crate::input::UserInput;
+use crate::prompt::Input;
 use anyhow::Result;
 
-pub fn create(input: UserInput) -> Result<()> {
-    println!("creating project with name: {}", &input.name);
+pub fn create(input: Input) -> Result<()> {
+    println!("creating project at: {:?}", &input.location);
     Ok(())
 }
