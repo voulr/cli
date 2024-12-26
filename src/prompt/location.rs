@@ -3,19 +3,24 @@ use anyhow::{bail, Result};
 use inquire::{ui::RenderConfig, validator::Validation, Text};
 use std::{ffi::OsStr, path::PathBuf};
 
-pub fn prompt(rcfg: &RenderConfig) -> Result<PathBuf> {
-    let location = Text::new("Where would you like your project to be created?")
+#[derive(Debug)]
+pub struct Location {
+    pub name: String,
+    pub path: PathBuf,
+}
+
+pub fn prompt(rcfg: &RenderConfig) -> Result<Location> {
+    let input = Text::new("Where would you like your project to be created?")
         .with_default(DEFAULT_LOCATION)
         .with_render_config(*rcfg)
-        .with_validator(|text: &str| match get_path(text) {
-            Ok(path) => {
-                let file_name = get_file_name(&path);
-                if !file_name
+        .with_validator(|text: &str| match get_location(text) {
+            Ok(location) => {
+                if !location.name
                     .chars()
                     .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-' || c == '_')
                 {
                     Ok(Validation::Invalid(
-					    format!("{} must only contain lowercase alphanumeric characters, dashes, and underscores", file_name).into(),
+					    format!("{} must only contain lowercase alphanumeric characters, dashes, and underscores", location.name).into(),
                     ))
                 } else {
                     Ok(Validation::Valid)
@@ -25,27 +30,24 @@ pub fn prompt(rcfg: &RenderConfig) -> Result<PathBuf> {
         })
         .prompt()?;
 
-    let path = get_path(&location)?;
-    Ok(path)
+    let location = get_location(&input)?;
+    Ok(location)
 }
 
-fn get_path(input: &str) -> Result<PathBuf> {
+fn get_location(input: &str) -> Result<Location> {
     let path = PathBuf::from(input.trim());
-    let file_name = get_file_name(&path);
+    let name = path
+        .file_name()
+        .unwrap_or(OsStr::new(&path))
+        .to_string_lossy()
+        .to_string();
 
     if path.is_file() {
-        bail!("{} is a file that exists", file_name);
+        bail!("{} is a file that exists", name);
     }
     if path.is_dir() && path.read_dir()?.next().is_some() {
-        bail!("{} is a directory that is not empty", file_name);
+        bail!("{} is a directory that is not empty", name);
     }
 
-    Ok(path)
-}
-
-fn get_file_name(path: &PathBuf) -> String {
-    path.file_name()
-        .unwrap_or(OsStr::new(path))
-        .to_string_lossy()
-        .to_string()
+    Ok(Location { name, path })
 }

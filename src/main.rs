@@ -1,4 +1,7 @@
-use crate::{create::create, init::init, prompt::prompt};
+use crate::{
+    create::{create, CreateArgs},
+    init::init,
+};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
@@ -16,7 +19,7 @@ struct Args {
 
 #[derive(Subcommand)]
 enum Commands {
-    Create,
+    Create(CreateArgs),
     Init,
 }
 
@@ -24,8 +27,8 @@ fn main() -> Result<()> {
     let args = Args::parse();
 
     match args.command {
-        Commands::Create => create(prompt()?)?,
-        Commands::Init => init(prompt()?)?,
+        Commands::Create(args) => create(args)?,
+        Commands::Init => init()?,
     };
 
     Ok(())

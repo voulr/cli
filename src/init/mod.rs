@@ -1,7 +1,8 @@
-use crate::prompt::Input;
+use crate::prompt::prompt;
 use anyhow::Result;
 
-pub fn init(input: Input) -> Result<()> {
-    println!("creating project at: {:?}", &input.location);
+pub fn init() -> Result<()> {
+    let input = prompt()?;
+    println!("init project at: {}", &input.location.name);
     Ok(())
 }

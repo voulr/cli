@@ -1,12 +1,12 @@
+use self::location::Location;
 use anyhow::Result;
 use inquire::ui::{Attributes, RenderConfig, StyleSheet};
-use std::path::PathBuf;
 
 pub mod location;
 
 #[derive(Debug)]
 pub struct Input {
-    pub location: PathBuf,
+    pub location: Location,
 }
 
 pub fn prompt() -> Result<Input> {
