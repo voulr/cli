@@ -1,34 +1,28 @@
-use crate::{
-    create::{create, CreateArgs},
-    init::init,
-};
+use crate::{create::create, prompt::prompt};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 mod create;
-mod init;
 mod prompt;
-mod utils;
 
 #[derive(Parser)]
-#[command(version, about, long_about = None)]
-struct Args {
+#[command(version, long_about = None)]
+struct Cli {
     #[command(subcommand)]
     command: Commands,
 }
 
 #[derive(Subcommand)]
 enum Commands {
-    Create(CreateArgs),
-    Init,
+    #[command(about = "Scaffolds new Voulr project", alias = "new")]
+    Create { location: Option<String> },
 }
 
 fn main() -> Result<()> {
-    let args = Args::parse();
+    let cli = Cli::parse();
 
-    match args.command {
-        Commands::Create(args) => create(args)?,
-        Commands::Init => init()?,
+    match &cli.command {
+        Commands::Create { location } => create(prompt(&location)?)?,
     };
 
     Ok(())
