@@ -1,4 +1,4 @@
-use self::location::{validate_location, Location};
+use self::location::{location_validator, Location};
 use anyhow::Result;
 use inquire::ui::{Attributes, RenderConfig, StyleSheet};
 
@@ -8,7 +8,7 @@ pub struct PromptRes {
     pub location: Location,
 }
 
-pub fn prompt(loc_arg: &Option<String>) -> Result<PromptRes> {
+pub fn prompt(location: &Option<String>) -> Result<PromptRes> {
     let rcfg = RenderConfig {
         prompt: StyleSheet {
             att: Attributes::BOLD,
@@ -17,8 +17,8 @@ pub fn prompt(loc_arg: &Option<String>) -> Result<PromptRes> {
         ..Default::default()
     };
 
-    let location = match loc_arg {
-        Some(loc) => validate_location(loc)?,
+    let location = match location {
+        Some(loc) => location_validator(loc)?,
         None => location::prompt(&rcfg)?,
     };
 

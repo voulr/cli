@@ -1,9 +1,11 @@
-use crate::{create::create, prompt::prompt};
+use crate::{create::create, init::init, prompt::prompt, utils::DEFAULT_LOCATION};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 mod create;
+mod init;
 mod prompt;
+mod utils;
 
 #[derive(Parser)]
 #[command(version, long_about = None)]
@@ -15,14 +17,20 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     #[command(about = "Scaffolds new Voulr project", alias = "new")]
-    Create { location: Option<String> },
+    Create { name: Option<String> },
+    #[command(about = "Sets up a new Voulr project in the current directory")]
+    Init,
 }
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Create { location } => create(prompt(&location)?)?,
+        Commands::Create { name } => create(prompt(&name)?)?,
+        Commands::Init => {
+            let name = Some(DEFAULT_LOCATION.to_string());
+            init(prompt(&name)?)?
+        }
     };
 
     Ok(())

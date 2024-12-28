@@ -1,8 +1,8 @@
+use crate::utils::DEFAULT_LOCATION;
 use anyhow::{bail, Result};
 use inquire::{ui::RenderConfig, validator::Validation, Text};
+use regex::Regex;
 use std::{ffi::OsStr, path::PathBuf};
-
-const DEFAULT_LOCATION: &str = "./";
 
 pub struct Location {
     pub name: String,
@@ -13,7 +13,7 @@ pub fn prompt(rcfg: &RenderConfig) -> Result<Location> {
     let input = Text::new("Where would you like your project to be created?")
         .with_default(DEFAULT_LOCATION)
         .with_render_config(*rcfg)
-        .with_validator(|text: &str| match validate_location(text) {
+        .with_validator(|text: &str| match location_validator(text) {
             Ok(_) => Ok(Validation::Valid),
             Err(e) => Ok(Validation::Invalid(e.into())),
         })
@@ -33,22 +33,23 @@ pub fn get_location(input: &str) -> Location {
     Location { name, path }
 }
 
-pub fn validate_location(input: &str) -> Result<Location> {
-    let location = get_location(input);
+pub fn location_validator(input: &str) -> Result<Location> {
+    let loc = get_location(input);
 
-    if location.path.is_file() {
-        bail!("{} is a file that exists", location.name);
+    if loc.path.is_file() {
+        bail!("{} is a file that exists", loc.name);
     }
-    if location.path.is_dir() && location.path.read_dir()?.next().is_some() {
-        bail!("{} is a directory that is not empty", location.name);
+    if loc.path.is_dir() && loc.path.read_dir()?.next().is_some() {
+        bail!("{} is a directory that is not empty", loc.name);
     }
-    let name_regex = regex::Regex::new(r"^[a-z0-9_-]+$").unwrap();
-    if !name_regex.is_match(&location.name) {
+
+    let name_regex = Regex::new(r"^[a-z0-9_-]+$").unwrap();
+    if !name_regex.is_match(&loc.name) {
         bail!(
-            "{} must only contain lowercase alphanumeric characters, dashes, and underscores",
-            location.name
+            "Location ({}) only contain lowercase alphanumeric characters, dashes, and underscores",
+            loc.name
         );
     }
 
-    Ok(location)
+    Ok(loc)
 }
