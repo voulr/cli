@@ -2,7 +2,7 @@ use self::location::{validate_location, Location};
 use anyhow::Result;
 use inquire::ui::{Attributes, RenderConfig, StyleSheet};
 
-pub mod location;
+mod location;
 
 pub struct PromptRes {
     pub location: Location,

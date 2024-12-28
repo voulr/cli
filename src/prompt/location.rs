@@ -4,7 +4,6 @@ use std::{ffi::OsStr, path::PathBuf};
 
 const DEFAULT_LOCATION: &str = "./";
 
-#[derive(Debug)]
 pub struct Location {
     pub name: String,
     pub path: PathBuf,

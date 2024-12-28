@@ -1,6 +1,6 @@
 {
 	"name": "voulr",
-	"version": "TEMPLATE",
+	"version": "template",
 	"description": "A CLI for creating Voulr projects",
 	"license": "MIT",
 	"repository": {
