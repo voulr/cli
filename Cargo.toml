@@ -1,6 +1,6 @@
 [package]
 name = "voulr"
-version = "0.3.2"
+version = "0.3.3"
 edition = "2021"
 
 [dependencies]
@@ -8,6 +8,7 @@ anyhow = "1.0.95"
 clap = { version = "4.5.23", features = ["derive"] }
 inquire = "0.7.5"
 regex = "1.11.1"
+strum = { version = "0.26.3", features = ["derive"] }
 
 [profile.release]
 opt-level = 's' # optimize for size

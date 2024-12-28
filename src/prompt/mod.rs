@@ -1,11 +1,14 @@
 use self::location::{location_validator, Location};
+use crate::utils::Language;
 use anyhow::Result;
 use inquire::ui::{Attributes, RenderConfig, StyleSheet};
 
+mod language;
 mod location;
 
 pub struct PromptRes {
     pub location: Location,
+    pub language: Language,
 }
 
 pub fn prompt(location: &Option<String>) -> Result<PromptRes> {
@@ -21,6 +24,7 @@ pub fn prompt(location: &Option<String>) -> Result<PromptRes> {
         Some(loc) => location_validator(loc)?,
         None => location::prompt(&rcfg)?,
     };
+    let language = language::prompt(&rcfg)?;
 
-    Ok(PromptRes { location })
+    Ok(PromptRes { location, language })
 }
