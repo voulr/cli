@@ -10,7 +10,7 @@ async function run() {
 
 	// install the binary if it doesnt exist
 	if (fs.existsSync(targetExecutablePath)) {
-		await require("./install.cjs")
+		require("./install.cjs")
 	}
 
 	spawnSync(bin, process.argv.slice(2), {
