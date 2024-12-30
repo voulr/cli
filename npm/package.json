@@ -9,9 +9,9 @@
 	},
 	"homepage": "https://voulr.com",
 	"scripts": {
-		"postinstall": "node ./install.js"
+		"postinstall": "node ./install.cjs"
 	},
-	"bin": "./run.js",
+	"bin": "./run.cjs",
 	"keywords": [
 		"create",
 		"new",
