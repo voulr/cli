@@ -4,6 +4,7 @@ const os = require("os")
 const { join } = require("path")
 const { x: extract } = require("tar")
 const { version } = require("./package.json")
+const { Readable } = require("stream")
 
 async function install() {
 	let voulrFileName = os.platform() === "win32" ? "voulr.exe" : "voulr"
