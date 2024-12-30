@@ -15,7 +15,7 @@ async function install() {
 	}
 
 	let target = getTarget()
-	const url = `https://github.com/voulr/cli/releases/download/v${version}/create-o7-app-${target}.tar.gz`
+	const url = `https://github.com/voulr/cli/releases/download/v${version}/voulr-${target}.tar.gz`
 
 	// download and extract binaries from release
 	const res = await fetch(url)
@@ -50,7 +50,4 @@ function getTarget() {
 	throw new Error("Unsupported platform")
 }
 
-install().catch((error) => {
-	console.error("Installation failed:", error)
-	process.exit(1)
-})
+install()
