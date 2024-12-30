@@ -2,8 +2,7 @@
 const fs = require("fs")
 const os = require("os")
 const { join } = require("path")
-const https = require("https")
-const tar = require("tar")
+const { x: extract } = require("tar")
 const { version } = require("./package.json")
 
 async function install() {
@@ -16,26 +15,22 @@ async function install() {
 	}
 
 	let target = getTarget()
-	const url = `https://github.com/voulr/cli/releases/download/v${version}/voulr-${target}.tar.gz`
+	const url = `https://github.com/voulr/cli/releases/download/v${version}/create-o7-app-${target}.tar.gz`
 
-	console.log(`Downloading ${url}`)
-
-	// download and extract from release
-	await new Promise((resolve, reject) => {
-		https
-			.get(url, (response) => {
-				if (response.statusCode !== 200) {
-					return reject(new Error(`Failed to get '${url}' (${response.statusCode})`))
-				}
-				response
-					.pipe(tar.x({ C: __dirname }))
-					.on("end", resolve)
-					.on("error", reject)
-			})
-			.on("error", reject)
+	// download and extract binaries from release
+	const res = await fetch(url)
+	if (!res.ok) {
+		console.error(`Error fetching release: ${res.statusText}`)
+		process.exit(1)
+	}
+	const sink = Readable.fromWeb(res.body).pipe(extract({ strip: 1, C: dir }))
+	return new Promise((resolve) => {
+		sink.on("finish", () => resolve())
+		sink.on("error", (err) => {
+			console.error(`Error fetching release: ${err.message}`)
+			process.exit(1)
+		})
 	})
-
-	console.log("Download and extraction complete")
 }
 
 function getTarget() {
