@@ -1,6 +1,6 @@
 {
 	"name": "voulr",
-	"version": "template",
+	"version": "0.3.8",
 	"description": "A CLI for creating Voulr projects",
 	"license": "MIT",
 	"repository": {
@@ -22,8 +22,5 @@
 	],
 	"dependencies": {
 		"tar": "^7.4.3"
-	},
-	"engines": {
-		"node": ">=18"
 	}
 }
