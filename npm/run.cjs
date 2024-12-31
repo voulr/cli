@@ -13,10 +13,14 @@ async function run() {
 		require("./install.cjs")
 	}
 
-	spawnSync(targetExecutablePath, process.argv.slice(2), {
+	let res = spawnSync(targetExecutablePath, process.argv.slice(2), {
 		cwd: process.cwd(),
 		stdio: "inherit",
 	})
+	if (res.error) {
+		throw new Error(`Error executing binary: ${res.error}`)
+	}
+	process.exit(res.status)
 }
 
 run()
