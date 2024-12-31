@@ -5,6 +5,7 @@ const { join } = require("path")
 const { x } = require("tar")
 const { Readable } = require("stream")
 const { version } = require("./package.json")
+const { execSync } = require("child_process")
 
 async function install() {
 	let voulrFileName = os.platform() === "win32" ? "voulr.exe" : "voulr"
@@ -37,10 +38,21 @@ function getTarget() {
 		return "x86_64-pc-windows-msvc"
 	}
 	if (platform === "linux" && arch === "x64") {
-		return "x86_64-unknown-linux-musl"
+		return isMusl() ? "x86_64-unknown-linux-musl" : "x86_64-unknown-linux-gnu"
 	}
 
 	throw new Error("Unsupported platform")
+}
+
+function isMusl() {
+	try {
+		const command = "getconf GNU_LIBC_VERSION 2>&1 || true; ldd --version 2>&1 || true"
+		const output = execSync(command, { encoding: "utf8" })
+		const [_, ldd1] = output.split(/[\r\n]+/)
+		return ldd1 && ldd1.includes("musl")
+	} catch {
+		return false
+	}
 }
 
 async function downloadAndExtract(url, dir, bin) {
