@@ -6,14 +6,15 @@ const { spawnSync } = require("child_process")
 
 async function run() {
 	let voulrFileName = os.platform() === "win32" ? "voulr.exe" : "voulr"
-	const targetExecutablePath = join(__dirname, voulrFileName)
+	const dir = join(__dirname, "node_modules", ".bin")
+	const bin = join(dir, voulrFileName)
 
 	// make sure binary is installed
-	if (!fs.existsSync(targetExecutablePath)) {
+	if (!fs.existsSync(bin)) {
 		require("./install.cjs")
 	}
 
-	let res = spawnSync(targetExecutablePath, process.argv.slice(2), {
+	let res = spawnSync(bin, process.argv.slice(2), {
 		cwd: process.cwd(),
 		stdio: "inherit",
 	})

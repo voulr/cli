@@ -8,11 +8,17 @@ const { version } = require("./package.json")
 
 async function install() {
 	let voulrFileName = os.platform() === "win32" ? "voulr.exe" : "voulr"
-	const targetExecutablePath = join(__dirname, voulrFileName)
+	const dir = join(__dirname, "node_modules", ".bin")
+	const bin = join(dir, voulrFileName)
 
 	// check if binary is already installed
-	if (fs.existsSync(targetExecutablePath)) {
+	if (fs.existsSync(bin)) {
 		return
+	}
+
+	// make sure directory is created
+	if (!fs.existsSync(dir)) {
+		mkdirSync(dir, { recursive: true })
 	}
 
 	let target = getTarget()
@@ -43,7 +49,7 @@ async function downloadAndExtract(url) {
 		throw new Error(`Error fetching release: ${res.statusText}`)
 	}
 
-	const extractStream = Readable.fromWeb(res.body).pipe(x({ C: __dirname }))
+	const extractStream = Readable.fromWeb(res.body).pipe(x({ strip: 1, C: dir }))
 
 	return new Promise((resolve) => {
 		extractStream.on("finish", () => {
