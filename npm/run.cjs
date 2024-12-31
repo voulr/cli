@@ -8,12 +8,12 @@ async function run() {
 	let voulrFileName = os.platform() === "win32" ? "voulr.exe" : "voulr"
 	const targetExecutablePath = join(__dirname, voulrFileName)
 
-	// install the binary if it doesnt exist
-	if (fs.existsSync(targetExecutablePath)) {
+	// make sure binary is installed
+	if (!fs.existsSync(targetExecutablePath)) {
 		require("./install.cjs")
 	}
 
-	spawnSync(bin, process.argv.slice(2), {
+	spawnSync(targetExecutablePath, process.argv.slice(2), {
 		cwd: process.cwd(),
 		stdio: "inherit",
 	})
