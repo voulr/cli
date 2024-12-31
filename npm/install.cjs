@@ -23,7 +23,7 @@ async function install() {
 
 	let target = getTarget()
 	let url = `https://github.com/voulr/cli/releases/download/v${version}/voulr-${target}.tar.gz`
-	return await downloadAndExtract(url, dir)
+	return await downloadAndExtract(url, dir, bin)
 }
 
 function getTarget() {
@@ -43,7 +43,7 @@ function getTarget() {
 	throw new Error("Unsupported platform")
 }
 
-async function downloadAndExtract(url, dir) {
+async function downloadAndExtract(url, dir, bin) {
 	const res = await fetch(url)
 	if (!res.ok) {
 		throw new Error(`Error fetching release: ${res.statusText}`)
@@ -52,7 +52,10 @@ async function downloadAndExtract(url, dir) {
 	const extractStream = Readable.fromWeb(res.body).pipe(x({ C: dir }))
 
 	return new Promise((resolve) => {
-		extractStream.on("finish", () => resolve())
+		extractStream.on("finish", () => {
+			fs.chmodSync(bin, 0o755)
+			resolve()
+		})
 		extractStream.on("error", (err) => {
 			throw new Error(`Error extracting file: ${err.message}`)
 		})
