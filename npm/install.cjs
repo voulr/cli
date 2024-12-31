@@ -49,14 +49,12 @@ async function downloadAndExtract(url, dir) {
 		throw new Error(`Error fetching release: ${res.statusText}`)
 	}
 
-	const extractStream = Readable.fromWeb(res.body).pipe(x({ strip: 1, C: dir }))
+	const extractStream = Readable.fromWeb(res.body).pipe(x({ C: dir }))
 
 	return new Promise((resolve) => {
-		extractStream.on("finish", () => {
-			resolve()
-		})
-		extractStream.on("error", (error) => {
-			throw new Error(`Error extracting file: ${error.message}`)
+		extractStream.on("finish", () => resolve())
+		extractStream.on("error", (err) => {
+			throw new Error(`Error extracting file: ${err.message}`)
 		})
 	})
 }
