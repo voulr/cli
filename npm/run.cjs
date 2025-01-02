@@ -6,8 +6,7 @@ const { spawnSync } = require("child_process")
 
 async function run() {
 	let voulrFileName = os.platform() === "win32" ? "voulr.exe" : "voulr"
-	const dir = join(__dirname, "node_modules", ".bin")
-	const bin = join(dir, voulrFileName)
+	const bin = join(__dirname, voulrFileName)
 
 	// make sure binary is installed
 	if (!fs.existsSync(bin)) {

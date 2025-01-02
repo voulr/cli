@@ -9,22 +9,16 @@ const { execSync } = require("child_process")
 
 async function install() {
 	let voulrFileName = os.platform() === "win32" ? "voulr.exe" : "voulr"
-	const dir = join(__dirname, "node_modules", ".bin")
-	const bin = join(dir, voulrFileName)
+	const bin = join(__dirname, voulrFileName)
 
 	// check if binary is already installed
 	if (fs.existsSync(bin)) {
 		return
 	}
 
-	// make sure directory is created
-	if (!fs.existsSync(dir)) {
-		mkdirSync(dir, { recursive: true })
-	}
-
 	let target = getTarget()
 	let url = `https://github.com/voulr/cli/releases/download/v${version}/voulr-${target}.tar.gz`
-	return await downloadAndExtract(url, dir, bin)
+	return await downloadAndExtract(url, bin)
 }
 
 function getTarget() {
@@ -55,13 +49,13 @@ function isMusl() {
 	}
 }
 
-async function downloadAndExtract(url, dir, bin) {
+async function downloadAndExtract(url, bin) {
 	const res = await fetch(url)
 	if (!res.ok) {
 		throw new Error(`Error fetching release: ${res.statusText}`)
 	}
 
-	const extractStream = Readable.fromWeb(res.body).pipe(x({ C: dir }))
+	const extractStream = Readable.fromWeb(res.body).pipe(x({ C: __dirname }))
 
 	return new Promise((resolve) => {
 		extractStream.on("finish", () => {
