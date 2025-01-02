@@ -8,27 +8,23 @@ const { version } = require("./package.json")
 const { execSync } = require("child_process")
 
 async function install() {
-	try {
-		let voulrFileName = os.platform() === "win32" ? "voulr.exe" : "voulr"
-		const bin = join(__dirname, voulrFileName)
+	let voulrFileName = os.platform() === "win32" ? "voulr.exe" : "voulr"
+	const bin = join(__dirname, voulrFileName)
 
-		if (fs.existsSync(bin)) {
-			process.exit(0)
-		}
-
-		let target = getTarget()
-		let url = `https://github.com/voulr/cli/releases/download/v${version}/voulr-${target}.tar.gz`
-		await downloadAndExtract(url, bin)
-		process.exit(0)
-	} catch (error) {
-		console.error("Installation failed:", error)
-		process.exit(1)
+	// check if binary is already installed
+	if (fs.existsSync(bin)) {
+		return
 	}
+
+	let target = getTarget()
+	let url = `https://github.com/voulr/cli/releases/download/v${version}/voulr-${target}.tar.gz`
+	return await downloadAndExtract(url, bin)
 }
 
 function getTarget() {
 	const platform = os.platform()
 	const arch = os.arch()
+
 	if (platform == "darwin") {
 		return arch == "arm64" ? "aarch64-apple-darwin" : "x86_64-apple-darwin"
 	}
@@ -38,6 +34,7 @@ function getTarget() {
 	if (platform === "linux" && arch === "x64") {
 		return isMusl() ? "x86_64-unknown-linux-musl" : "x86_64-unknown-linux-gnu"
 	}
+
 	throw new Error("Unsupported platform")
 }
 
@@ -53,33 +50,22 @@ function isMusl() {
 }
 
 async function downloadAndExtract(url, bin) {
-	const res = await fetch(url, {
-		timeout: 10000,
-	})
-
+	const res = await fetch(url)
 	if (!res.ok) {
 		throw new Error(`Error fetching release: ${res.statusText}`)
 	}
 
-	return new Promise((resolve, reject) => {
-		const extractStream = Readable.fromWeb(res.body).pipe(x({ C: __dirname }))
+	const extractStream = Readable.fromWeb(res.body).pipe(x({ C: __dirname }))
 
+	return new Promise((resolve) => {
 		extractStream.on("finish", () => {
-			try {
-				fs.chmodSync(bin, 0o755)
-				resolve()
-			} catch (error) {
-				reject(new Error(`Failed to set permissions: ${error.message}`))
-			}
+			fs.chmodSync(bin, 0o755)
+			resolve()
 		})
-
 		extractStream.on("error", (err) => {
-			reject(new Error(`Error extracting file: ${err.message}`))
+			throw new Error(`Error extracting file: ${err.message}`)
 		})
 	})
 }
 
-install().catch((error) => {
-	console.error("Installation failed:", error)
-	process.exit(1)
-})
+install()
