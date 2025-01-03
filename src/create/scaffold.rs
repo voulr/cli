@@ -7,8 +7,5 @@ use rust_embed::Embed;
 struct Templates;
 
 pub fn scaffold(pres: &PromptRes) -> Result<()> {
-    for file in Templates::iter() {
-        println!("{}", file);
-    }
     Ok(())
 }

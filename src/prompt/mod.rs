@@ -1,5 +1,4 @@
-use self::location::{location_validator, Location};
-use crate::utils::{Framework, Language};
+use self::{framework::Framework, language::Language, location::Location};
 use anyhow::Result;
 use inquire::ui::{Attributes, RenderConfig, StyleSheet};
 
@@ -23,7 +22,7 @@ pub fn prompt(location: &Option<String>) -> Result<PromptRes> {
     };
 
     let location = match location {
-        Some(loc) => location_validator(loc)?,
+        Some(loc) => Location::new(&loc).validate()?,
         None => location::prompt(&rcfg)?,
     };
     let language = language::prompt(&rcfg)?;

@@ -1,13 +1,12 @@
 [package]
 name = "voulr"
-version = "0.5.9"
+version = "0.6.0"
 edition = "2021"
 
 [dependencies]
 anyhow = "1.0.95"
 clap = { version = "4.5.23", features = ["derive"] }
 inquire = "0.7.5"
-regex = "1.11.1"
 rust-embed = "8.5.0"
 strum = { version = "0.26.3", features = ["derive"] }
 
